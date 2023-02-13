@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using PaltformService.Data;
 using PaltformService.DTOs;
 using PaltformService.Models;
+using PlatformService.SyncDataServices.Http;
 
 namespace PaltformService.Controllers
 {
@@ -12,10 +13,16 @@ namespace PaltformService.Controllers
     {
         private readonly IPlatformRepo _repository;
         private readonly IMapper _mapper;
+        private readonly ICommandDataClient _commandDataClient;
 
-        public PlatformsController(IPlatformRepo repository, IMapper mapper) { 
+        public PlatformsController(
+            IPlatformRepo repository,
+            IMapper mapper,
+            ICommandDataClient commandDataClient)
+        {
             _repository = repository;
             _mapper = mapper;
+            _commandDataClient = commandDataClient;
         }
 
         [HttpGet]
@@ -41,7 +48,7 @@ namespace PaltformService.Controllers
         }
 
         [HttpPost]
-        public ActionResult<PlatformReadDTO> CreatePlatform(PlatformCreateDTO platform) {
+        public async Task<ActionResult<PlatformReadDTO>> CreatePlatform(PlatformCreateDTO platform) {
             
             if (platform == null)
             {
@@ -55,6 +62,16 @@ namespace PaltformService.Controllers
             _repository.SaveChanges();
 
             var platformReadDto = _mapper.Map<PlatformReadDTO>(platformModel);
+
+            try
+            {
+                await _commandDataClient.SendPlatformToCommand(platformReadDto);
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine($"--> Could not send synchronously: {ex.Message}");
+            }
 
             return CreatedAtRoute(nameof(GetPlatformById), new { Id = platformReadDto.Id }, platformReadDto);
 

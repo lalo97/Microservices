@@ -1,5 +1,5 @@
 # create secret
-# kubectl create secret generic mssql --from-literal=SA_PASSWORD="pa$$w0rd!"
+# kubectl create secret generic mssql-secret --from-literal=SA_PASSWORD="pa55w0rd!"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -27,7 +27,7 @@ spec:
             - name: SA_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: mssql
+                  name: mssql-secret
                   key: SA_PASSWORD
           volumeMounts:
             - mountPath: /var/opt/mssql/data

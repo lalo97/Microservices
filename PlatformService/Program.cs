@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PaltformService.Data;
+using PlatformService.AsyncDataServices;
 using PlatformService.SyncDataServices.Http;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,11 +16,9 @@ else
 }
 
 builder.Services.AddScoped<IPlatformRepo, PlatformRepo>();
-
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-
 builder.Services.AddHttpClient<ICommandDataClient, HttpCommandDataClient>();
-
+builder.Services.AddSingleton<IMessageBusClient, MessageBusClient>();
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
